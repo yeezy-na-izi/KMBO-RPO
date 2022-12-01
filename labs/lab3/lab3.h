@@ -97,7 +97,7 @@ Student *getStudent(const University *university, const unsigned long id);
 -------------------------------------------------------------------------------
 - Если в университете нет ни групп, ни студентов выводить сообщение об этом
 */
-void printUniversity(const University *university);
+void printUniversity(const University *university); // +
 
 /*
 - Функция, печатающая информацию о группе в следующем формате:
@@ -109,7 +109,7 @@ void printUniversity(const University *university);
         ...
 - Если в группе нет студентов, выводить сообщение об этом
 */
-void printGroup(const Group group);
+void printGroup(const Group group); // +
 
 /*
 - Функция, печатающая информацию о студенте в следующем формате:
@@ -117,7 +117,7 @@ void printGroup(const Group group);
         Фамилия Имя 
         Дата рождения
 */
-void printStudent(const Student student);
+void printStudent(const Student student); // +
 
 /*
 - Функция, освобождающая всю выделенную память для университета
