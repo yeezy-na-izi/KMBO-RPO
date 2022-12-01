@@ -14,22 +14,28 @@ University *initUniversity(const char *fileName) {
     }
     university->groups = NULL;
     university->groupsCount = 0;
+
+    Group *group = NULL;
+    Student *student = NULL;
+    Group *group_tmp = NULL;
+
     while (!feof(file)) {
-        Student *student = (Student *) malloc(sizeof(Student));
+        student = (Student *) malloc(sizeof(Student));
         fread(student, sizeof(Student), 1, file);
         if (feof(file)) {
             free(student);
             break;
         }
-        Group *group = getGroup(university, student->groupName);
+        group = getGroup(university, student->groupName);
         if (group == NULL) {
-            group = (Group *) malloc(sizeof(Group));
-            strcpy(group->name, student->groupName);
-            group->students = NULL;
-            group->studentsCount = 0;
-            if (!addNewGroup(university, *group)) {
+            group_tmp = (Group *) malloc(sizeof(Group));
+            strcpy(group_tmp->name, student->groupName);
+            group_tmp->students = NULL;
+            group_tmp->studentsCount = 0;
+            if (!addNewGroup(university, *group_tmp)) {
                 continue;
             }
+            group = &university->groups[university->groupsCount - 1];
         }
         if (!addNewStudent(group, *student)) {
             continue;
@@ -40,11 +46,14 @@ University *initUniversity(const char *fileName) {
 }
 
 bool addNewGroup(University *university, const Group group) {
-    printf("addNewGroup: %s\n", group.name);
     if (university == NULL) {
         return false;
     }
-    university->groups = (Group *) realloc(university->groups, sizeof(Group *) * (university->groupsCount + 1));
+    if (university->groupsCount == 0) {
+        university->groups = (Group *) malloc(sizeof(Group));
+    } else {
+        university->groups = (Group *) realloc(university->groups, sizeof(Group) * (university->groupsCount + 1));
+    }
     if (university->groups == NULL) {
         return false;
     }
@@ -57,9 +66,8 @@ bool addNewStudent(Group *group, Student student) {
     if (group == NULL) {
         return false;
     }
-    if (group->students == NULL) {
+    if (group->studentsCount == 0) {
         group->students = (Student *) malloc(sizeof(Student));
-        group->studentsCount = 0;
     } else {
         group->students = (Student *) realloc(group->students, sizeof(Student) * (group->studentsCount + 1));
     }
@@ -112,6 +120,7 @@ Group *getGroup(const University *university, const char *name) {
             return &university->groups[i];
         }
     }
+
     return NULL;
 }
 
@@ -173,4 +182,9 @@ bool saveToFile(const char *fileName, const University *university) {
     }
     fclose(file);
     return true;
+}
+
+int main() {
+    University *university = initUniversity("/Users/yeezy_na_izi/CLionProjects/FirstSem/labs/lab3/kmbo22.dat");
+    printUniversity(university);
 }
