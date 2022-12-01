@@ -1,7 +1,6 @@
 #include "lab3.h"
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 
 University *initUniversity(const char *fileName) {
@@ -45,7 +44,7 @@ bool addNewGroup(University *university, const Group group) {
     if (university == NULL) {
         return false;
     }
-    university->groups = (Group **) realloc(university->groups, sizeof(Group *) * (university->groupsCount + 1));
+    university->groups = (Group *) realloc(university->groups, sizeof(Group *) * (university->groupsCount + 1));
     if (university->groups == NULL) {
         return false;
     }
@@ -88,6 +87,7 @@ bool removeGroup(University *university, const char *name) {
             return true;
         }
     }
+    return false;
 }
 
 bool removeStudent(University *university, const unsigned long id) {
@@ -173,14 +173,4 @@ bool saveToFile(const char *fileName, const University *university) {
     }
     fclose(file);
     return true;
-}
-
-int main() {
-    char *fileName = "/Users/yeezy_na_izi/CLionProjects/FirstSem/labs/lab3/kmbo22.dat";
-    University *university = initUniversity(fileName);
-    if (university == NULL) {
-        printf("Error: %s not found", fileName);
-        return 1;
-    }
-    printUniversity(university);
 }
