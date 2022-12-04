@@ -37,11 +37,13 @@ University *initUniversity(const char *fileName) {
             if (!addNewGroup(university, *group_tmp)) {
                 continue;
             }
+            free(group_tmp);
             group = &university->groups[university->groupsCount - 1];
         }
         if (!addNewStudent(group, *student)) {
             continue;
         }
+        free(student);
     }
     fclose(file);
     return university;
