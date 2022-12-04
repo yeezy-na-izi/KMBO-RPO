@@ -1,7 +1,9 @@
 #include "lab3.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
+unsigned long int g_Id = 1;
 
 University *initUniversity(const char *fileName) {
     University *university = (University *) malloc(sizeof(University));
@@ -83,9 +85,20 @@ bool addNewStudent(Group *group, Student student) {
     return true;
 }
 
+
+char *strip(char *str) {
+    char *end;
+    while (isspace((unsigned char) *str)) str++;
+    if (*str == 0) return str;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char) *end)) end--;
+    end[1] = '\0';
+    return str;
+}
+
 bool removeGroup(University *university, const char *name) {
     for (int i = 0; i < university->groupsCount; i++) {
-        if (strcmp(university->groups[i].name, name) == 0) {
+        if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
             free(university->groups[i].students);
             free(&university->groups[i]);
             for (int j = i; j < university->groupsCount - 1; j++) {
@@ -102,11 +115,10 @@ bool removeStudent(University *university, const unsigned long id) {
     for (int i = 0; i < university->groupsCount; i++) {
         for (int j = 0; j < university->groups[i].studentsCount; j++) {
             if (university->groups[i].students[j].id == id) {
-                free(&university->groups[i].students[j]);
-                university->groups[i].studentsCount--;
                 for (int k = j; k < university->groups[i].studentsCount; k++) {
                     university->groups[i].students[k] = university->groups[i].students[k + 1];
                 }
+                university->groups[i].studentsCount--;
                 return true;
             }
         }
@@ -114,15 +126,17 @@ bool removeStudent(University *university, const unsigned long id) {
     return false;
 }
 
+
 Group *getGroup(const University *university, const char *name) {
     for (int i = 0; i < university->groupsCount; i++) {
-        if (strcmp(university->groups[i].name, name) == 0) {
+        if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
             return &university->groups[i];
         }
     }
 
     return NULL;
 }
+
 
 Student *getStudent(const University *university, const unsigned long id) {
     for (int i = 0; i < university->groupsCount; i++) {
@@ -138,6 +152,7 @@ Student *getStudent(const University *university, const unsigned long id) {
 
 void printUniversity(const University *university) {
     for (int i = 0; i < university->groupsCount; i++) {
+        printf("%s\n", university->groups[i].name);
         printGroup(university->groups[i]);
         printf("------------------------------------------------------------------------------\n");
     }
@@ -148,7 +163,6 @@ void printUniversity(const University *university) {
 
 
 void printGroup(const Group group) {
-    printf("%s\n", group.name);
     for (int i = 0; i < group.studentsCount; i++) {
         printStudent(group.students[i]);
     }
@@ -161,17 +175,29 @@ void printStudent(const Student student) {
     printf("\t%d\n", student.birthYear);
 }
 
+void freeStudent(Student *student) {
+    printf("Free student %lu\n", student->id);
+    free(student);
+}
+
+void freeGroup(Group *group) {
+//    for (int i = 0; i < group->studentsCount; i++) {
+//        freeStudent(&group->students[i]);
+//    }
+    free(&group->students[0]);
+//    free(group->name);
+}
+
 void freeUniversity(University *university) {
     for (int i = 0; i < university->groupsCount; i++) {
-        free(university->groups[i].students);
+        freeGroup(&university->groups[i]);
     }
-    free(university->groups);
+//    free(university->groups);
     free(university);
-
 }
 
 bool saveToFile(const char *fileName, const University *university) {
-    FILE *file = fopen(fileName, "wb");
+    FILE *file = fopen(fileName, "w+b");
     if (file == NULL) {
         return false;
     }
@@ -182,9 +208,4 @@ bool saveToFile(const char *fileName, const University *university) {
     }
     fclose(file);
     return true;
-}
-
-int main() {
-    University *university = initUniversity("/Users/yeezy_na_izi/CLionProjects/FirstSem/labs/lab3/kmbo22.dat");
-    printUniversity(university);
 }
