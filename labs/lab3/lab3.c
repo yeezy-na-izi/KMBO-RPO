@@ -175,24 +175,17 @@ void printStudent(const Student student) {
     printf("\t%d\n", student.birthYear);
 }
 
-void freeStudent(Student *student) {
-    printf("Free student %lu\n", student->id);
-    free(student);
-}
 
 void freeGroup(Group *group) {
-//    for (int i = 0; i < group->studentsCount; i++) {
-//        freeStudent(&group->students[i]);
-//    }
-    free(&group->students[0]);
-//    free(group->name);
+    free(group->students);
+//    free(group);
 }
 
 void freeUniversity(University *university) {
     for (int i = 0; i < university->groupsCount; i++) {
         freeGroup(&university->groups[i]);
     }
-//    free(university->groups);
+    free(university->groups);
     free(university);
 }
 
