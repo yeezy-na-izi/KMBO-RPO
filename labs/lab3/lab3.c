@@ -49,18 +49,32 @@ University *initUniversity(const char *fileName) {
     return university;
 }
 
+void sort_students_by_surname(Group *group) {
+    for (int i = (int) group->studentsCount - 1; i > 0; i--) {
+        if (strcmp(group->students[i].surname, group->students[i - 1].surname) < 0) {
+            Student tmp = group->students[i];
+            group->students[i] = group->students[i - 1];
+            group->students[i - 1] = tmp;
+        } else {
+            break;
+        }
+    }
+}
+
 bool addNewGroup(University *university, const Group group) {
     if (university == NULL) {
         return false;
     }
+    Group *group_tmp = NULL;
     if (university->groupsCount == 0) {
-        university->groups = (Group *) malloc(sizeof(Group));
+        group_tmp = (Group *) malloc(sizeof(Group));
     } else {
-        university->groups = (Group *) realloc(university->groups, sizeof(Group) * (university->groupsCount + 1));
+        group_tmp = (Group *) realloc(university->groups, (university->groupsCount + 1) * sizeof(Group));
     }
-    if (university->groups == NULL) {
+    if (group_tmp == NULL) {
         return false;
     }
+    university->groups = group_tmp;
     university->groups[university->groupsCount] = group;
     university->groupsCount++;
     return true;
@@ -70,30 +84,40 @@ bool addNewStudent(Group *group, Student student) {
     if (group == NULL) {
         return false;
     }
+    Student *student_tmp = NULL;
     if (group->studentsCount == 0) {
-        group->students = (Student *) malloc(sizeof(Student));
+        student_tmp = (Student *) malloc(sizeof(Student));
     } else {
-        group->students = (Student *) realloc(group->students, sizeof(Student) * (group->studentsCount + 1));
+        student_tmp = (Student *) realloc(group->students, sizeof(Student) * (group->studentsCount + 1));
     }
-    if (group->students == NULL) {
+    if (student_tmp == NULL) {
         return false;
     }
+    group->students = student_tmp;
+
     if (student.id == 0) {
         student.id = g_Id;
     }
     group->students[group->studentsCount] = student;
     group->studentsCount++;
-    g_Id++;
+    sort_students_by_surname(group);
+    g_Id = student.id + 1;
     return true;
 }
 
 
 char *strip(char *str) {
     char *end;
-    while (isspace((unsigned char) *str)) str++;
-    if (*str == 0) return str;
+    while (isspace((unsigned char) *str)) {
+        str++;
+    }
+    if (*str == 0) {
+        return str;
+    }
     end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char) *end)) end--;
+    while (end > str && isspace((unsigned char) *end)) {
+        end--;
+    }
     end[1] = '\0';
     return str;
 }
@@ -102,10 +126,11 @@ bool removeGroup(University *university, const char *name) {
     for (int i = 0; i < university->groupsCount; i++) {
         if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
             free(university->groups[i].students);
-            free(&university->groups[i]);
-            for (int j = i; j < university->groupsCount - 1; j++) {
-                university->groups[j] = university->groups[j + 1];
-            }
+            memmove(
+                    &university->groups[i],
+                    &university->groups[i + 1],
+                    (university->groupsCount - i - 1) * sizeof(Group)
+            );
             university->groupsCount--;
             return true;
         }
@@ -117,9 +142,11 @@ bool removeStudent(University *university, const unsigned long id) {
     for (int i = 0; i < university->groupsCount; i++) {
         for (int j = 0; j < university->groups[i].studentsCount; j++) {
             if (university->groups[i].students[j].id == id) {
-                for (int k = j; k < university->groups[i].studentsCount; k++) {
-                    university->groups[i].students[k] = university->groups[i].students[k + 1];
-                }
+                memmove(
+                        &university->groups[i].students[j],
+                        &university->groups[i].students[j + 1],
+                        (university->groups[i].studentsCount - j - 1) * sizeof(Student)
+                );
                 university->groups[i].studentsCount--;
                 return true;
             }
@@ -135,7 +162,6 @@ Group *getGroup(const University *university, const char *name) {
             return &university->groups[i];
         }
     }
-
     return NULL;
 }
 
@@ -149,7 +175,6 @@ Student *getStudent(const University *university, const unsigned long id) {
         }
     }
     return NULL;
-
 }
 
 void printUniversity(const University *university) {
@@ -168,7 +193,6 @@ void printGroup(const Group group) {
     for (int i = 0; i < group.studentsCount; i++) {
         printStudent(group.students[i]);
     }
-
 }
 
 void printStudent(const Student student) {
@@ -178,14 +202,9 @@ void printStudent(const Student student) {
 }
 
 
-void freeGroup(Group *group) {
-    free(group->students);
-//    free(group);
-}
-
 void freeUniversity(University *university) {
     for (int i = 0; i < university->groupsCount; i++) {
-        freeGroup(&university->groups[i]);
+        free(university->groups[i].students);
     }
     free(university->groups);
     free(university);
@@ -193,14 +212,17 @@ void freeUniversity(University *university) {
 
 bool saveToFile(const char *fileName, const University *university) {
     FILE *file = fopen(fileName, "w+b");
+
     if (file == NULL) {
         return false;
     }
-    for (int i = 0; i < university->groupsCount; i++) {
-        for (int j = 0; j < university->groups[i].studentsCount; j++) {
+
+    for (unsigned i = 0; i < university->groupsCount; i++) {
+        for (unsigned j = 0; j < university->groups[i].studentsCount; j++) {
             fwrite(&university->groups[i].students[j], sizeof(Student), 1, file);
         }
     }
+
     fclose(file);
     return true;
 }

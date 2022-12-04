@@ -166,6 +166,7 @@ EAction get_action() {
     return eAction;
 }
 
+
 int main(int argc, char *argv[]) {
     char *fileName = NULL;
     size_t fileNameSize = 0;
@@ -219,9 +220,10 @@ int main(int argc, char *argv[]) {
     printf("Работа завершена\n");
     printf("Введите имя файла для сохранения:\n");
     fflush(stdin);
+    fflush(stdout);
     getline(&fileName, &fileNameSize, stdin);
     printf("Сохранение в файл %s\n", fileName);
-    saveToFile(fileName, university);
+    saveToFile("out.dat", university);
     freeUniversity(university);
     free(fileName);
 
