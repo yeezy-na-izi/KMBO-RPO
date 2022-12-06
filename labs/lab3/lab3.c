@@ -5,15 +5,34 @@
 
 unsigned long int g_Id = 1;
 
+char *strip(char *str) {
+    char *end;
+    while (isspace((unsigned char) *str)) {
+        str++;
+    }
+    if (*str == 0) {
+        return str;
+    }
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char) *end)) {
+        end--;
+    }
+    end[1] = '\0';
+    return str;
+}
+
+
 University *initUniversity(const char *fileName) {
     University *university = (University *) malloc(sizeof(University));
     if (university == NULL) {
         return NULL;
     }
+
     FILE *file = fopen(fileName, "rb");
     if (file == NULL) {
         return university;
     }
+
     university->groups = NULL;
     university->groupsCount = 0;
 
@@ -84,6 +103,9 @@ bool addNewStudent(Group *group, Student student) {
     if (group == NULL) {
         return false;
     }
+    if (strcmp(strip(group->name), strip(student.groupName)) != 0) {
+        return false;
+    }
     Student *student_tmp = NULL;
     if (group->studentsCount == 0) {
         student_tmp = (Student *) malloc(sizeof(Student));
@@ -101,28 +123,15 @@ bool addNewStudent(Group *group, Student student) {
     group->students[group->studentsCount] = student;
     group->studentsCount++;
     sort_students_by_surname(group);
-    g_Id = student.id + 1;
+    g_Id = student.id > g_Id ? student.id + 1 : g_Id + 1;
     return true;
 }
 
 
-char *strip(char *str) {
-    char *end;
-    while (isspace((unsigned char) *str)) {
-        str++;
-    }
-    if (*str == 0) {
-        return str;
-    }
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char) *end)) {
-        end--;
-    }
-    end[1] = '\0';
-    return str;
-}
-
 bool removeGroup(University *university, const char *name) {
+    if (university == NULL || name == NULL) {
+        return false;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
             free(university->groups[i].students);
@@ -139,6 +148,9 @@ bool removeGroup(University *university, const char *name) {
 }
 
 bool removeStudent(University *university, const unsigned long id) {
+    if (university == NULL) {
+        return false;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         for (int j = 0; j < university->groups[i].studentsCount; j++) {
             if (university->groups[i].students[j].id == id) {
@@ -157,6 +169,9 @@ bool removeStudent(University *university, const unsigned long id) {
 
 
 Group *getGroup(const University *university, const char *name) {
+    if (university == NULL || name == NULL) {
+        return NULL;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
             return &university->groups[i];
@@ -167,6 +182,9 @@ Group *getGroup(const University *university, const char *name) {
 
 
 Student *getStudent(const University *university, const unsigned long id) {
+    if (university == NULL) {
+        return NULL;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         for (int j = 0; j < university->groups[i].studentsCount; j++) {
             if (university->groups[i].students[j].id == id) {
@@ -178,6 +196,9 @@ Student *getStudent(const University *university, const unsigned long id) {
 }
 
 void printUniversity(const University *university) {
+    if (university == NULL) {
+        return;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         printf("%s\n", university->groups[i].name);
         printGroup(university->groups[i]);
@@ -193,16 +214,22 @@ void printGroup(const Group group) {
     for (int i = 0; i < group.studentsCount; i++) {
         printStudent(group.students[i]);
     }
+    if (group.studentsCount == 0) {
+        printf("Group is empty\n");
+    }
 }
 
 void printStudent(const Student student) {
-    printf("%lu\n", student.id);
-    printf("\t%s %s\n", student.name, student.surname);
-    printf("\t%d\n", student.birthYear);
+    printf("\t%lu\n", student.id);
+    printf("\t\t%s %s\n", student.name, student.surname);
+    printf("\t\t%d\n", student.birthYear);
 }
 
 
 void freeUniversity(University *university) {
+    if (university == NULL) {
+        return;
+    }
     for (int i = 0; i < university->groupsCount; i++) {
         free(university->groups[i].students);
     }
