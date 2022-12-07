@@ -74,7 +74,7 @@ University *initUniversity(const char *fileName) {
 
 void sort_students_by_surname(Group *group) {
     for (int i = (int) group->studentsCount - 1; i > 0; i--) {
-        if (strcmp(group->students[i].surname, group->students[i - 1].surname) < 0) {
+        if (strcasecmp(group->students[i].surname, group->students[i - 1].surname) < 0) {
             Student tmp = group->students[i];
             group->students[i] = group->students[i - 1];
             group->students[i - 1] = tmp;
