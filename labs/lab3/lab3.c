@@ -238,7 +238,7 @@ void printGroup(const Group group) {
 
 void printStudent(const Student student) {
     printf("\t%lu\n", student.id);
-    printf("\t\t%s %s\n", student.name, student.surname);
+    printf("\t\t%s %s\n", student.surname, student.name);
     printf("\t\t%d\n", student.birthYear);
 }
 
