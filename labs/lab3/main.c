@@ -189,7 +189,6 @@ int main(int argc, char *argv[]) {
             case E_ADD_GROUP:
                 group = add_group_task(university);
                 free(group);
-                Group *group = NULL;
                 continue;
             case E_ADD_STUDENT:
                 add_student_task(university);
