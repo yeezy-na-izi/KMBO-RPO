@@ -5,22 +5,17 @@
 
 unsigned long int g_Id = 1;
 
-char *strip(char *str) {
-    char *end;
-    while (isspace((unsigned char) *str)) {
-        str++;
+int max_id(University *university) {
+    int max = 0;
+    for (int i = 0; i < university->groupsCount; i++) {
+        for (int j = 0; j < university->groups[i].studentsCount; j++) {
+            if (university->groups[i].students[j].id > max) {
+                max = university->groups[i].students[j].id;
+            }
+        }
     }
-    if (*str == 0) {
-        return str;
-    }
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char) *end)) {
-        end--;
-    }
-    end[1] = '\0';
-    return str;
+    return max;
 }
-
 
 University *initUniversity(const char *fileName) {
     University *university = (University *) malloc(sizeof(University));
@@ -69,8 +64,10 @@ University *initUniversity(const char *fileName) {
         free(student);
     }
     fclose(file);
+    g_Id = max_id(university) + 1;
     return university;
 }
+
 
 void sort_students_by_surname(Group *group) {
     for (int i = (int) group->studentsCount - 1; i > 0; i--) {
@@ -112,7 +109,7 @@ bool addNewStudent(Group *group, Student student) {
         return false;
     }
 
-    if (strcmp(strip(group->name), strip(student.groupName)) != 0) {
+    if (strcmp(group->name, student.groupName) != 0) {
         return false;
     }
 
@@ -148,7 +145,7 @@ bool removeGroup(University *university, const char *name) {
     }
 
     for (int i = 0; i < university->groupsCount; i++) {
-        if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
+        if (strcmp(university->groups[i].name, name) == 0) {
             free(university->groups[i].students);
             memmove(
                     &university->groups[i],
@@ -189,7 +186,7 @@ Group *getGroup(const University *university, const char *name) {
     }
 
     for (int i = 0; i < university->groupsCount; i++) {
-        if (strcmp(strip(university->groups[i].name), strip((char *) name)) == 0) {
+        if (strcmp(university->groups[i].name, name) == 0) {
             return &university->groups[i];
         }
     }
